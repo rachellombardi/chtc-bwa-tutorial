@@ -58,7 +58,7 @@ $ export PATH = $PATH:$PWD/fastqc/bin
 Now let's test our instillation to make sure we have installed it correctly: 
 
 ```
-$ fastqc --version
+$ ./fastqc --version
 ```
 
 When running FastQC on our local laptop, we would typically run a command like this:
@@ -66,24 +66,70 @@ When running FastQC on our local laptop, we would typically run a command like t
 ```
 $ fastqc <SequencingFile.fastq.gz>
 ```
+For example, if running `fastqc` on `SRR2589044_1.fastq.gz` on our local machine, in the command line, we would type: 
 
-Now, let's create an executable for running FastQC called `fastqc.sh` that will run on any sequencing file we provide it by using the `*` wildcard to 
+```
+$ ./fastqc SRR2589044_1.fastq.gz
+```
+
+Where we call the `fastqc` executable and provide our sequencing file as an argument. To run FastQC on CHTC, we need to convert this to run inside a script. 
+
+To do so, we need to create a new file called `fastqc.sh` and save it with the following contents: 
+
+```
+#!/bin/bash
+
+# Running FastQC on sequencing file: SRR2589044_1.fastq.gz
+./fastqc SRR2589044_1.fastq.gz
+```
+
+Next, let's create an HTCondor submit file to queue this FastQC job to analyze SRR2589044_1.fastq.gz
+
+```
+
+```
+
+
+
+
+
+
+
+Now, let's create our HTCondor submit file called `fastqc.sh`:
+
+```
+executable  = fastqc.sh
+# arguments = 
+
+# need to transfer bwa.tar.gz file, the reference
+# genome, and the trimmed fastq files
+transfer_input_files = software/bwa.tar.gz, data/ref_genome/ecoli_rel606.fasta.gz, data/trimmed_fastq_small/SRR2584863_1.trim.sub.fastq, data/trimmed_fastq_small/SRR2584863_2.trim.sub.fastq
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+log         = logs/bwa_test_job.log
+output      = logs/bwa_test_job.out
+error       = logs/bwa_test_job.error
+
+request_cpus    = 1
+request_memory  = 2GB
+request_disk    = 1GB
+
+queue 1
+```
+
+When we are ready, we can submit one job by typing `condor_submit`
+
+
+To do so, let's create a new file called `fastqc.sh` that will run on any sequencing file we provide it by using the `*` wildcard to 
+
+
 
 ```
 #!/bin/bash
 
 fastqc *.fastq.gz
 ```
-
-Now, let's create our HTCondor submit file and submit one job analyzing one of our sequencing files: 
-
-```
-executable = fastqc.sh
-arguments = 
-
-
-
-
 
 
 
